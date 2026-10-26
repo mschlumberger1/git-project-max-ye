@@ -17,52 +17,52 @@ public class Git {
         }
         try {
             if (!init()) {
-                System.out.println("Git Repository Already Exists adding" + args[0]);
+                System.out.println("Git Repository Already Exists adding " + args[0]);
             } else {
                 System.out.println("Git Repository Created");
             }
-            File argument = new File(args[0]); //if you hard code this ima crash out, arg zero just takes the first arugemnt i.e java Git txt.file txt.file is the first arg
-            //it also works for dir's now
-            if (args[0].equals("tree")) { 
+            File argument = new File(args[0]); // if you hard code this ima crash out, arg zero just takes the first
+                                               // arugemnt i.e java Git txt.file txt.file is the first arg
+            // it also works for dir's now
+            if (args[0].equals("tree")) {
                 String rootHash = createTreeFromIndex();
                 System.out.println("Root tree: " + rootHash);
-                return; 
+                return;
             }
-        if (argument.isDirectory()) {
-            ArrayList<File> folders = new ArrayList<>();
-            folders.add(argument);
-        for (int i = 0; i < folders.size(); i++) {
-            File folder = folders.get(i);
-            File[] files = folder.listFiles();
+            if (argument.isDirectory()) {
+                ArrayList<File> folders = new ArrayList<>();
+                folders.add(argument);
+                for (int i = 0; i < folders.size(); i++) {
+                    File folder = folders.get(i);
+                    File[] files = folder.listFiles();
 
-            if (files == null) {
-                throw new IOException("Could not read directory: " + folder.getPath());
-            }
+                    if (files == null) {
+                        throw new IOException("Could not read directory: " + folder.getPath());
+                    }
 
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    folders.add(file); 
-                } 
-                else {
-                    index(file.getPath()); 
+                    for (File file : files) {
+                        if (file.isDirectory()) {
+                            folders.add(file);
+                        } else {
+                            index(file.getPath());
+                        }
+                    }
                 }
+            } else {
+                index(args[0]);
             }
-        }
-        } else {
-            index(args[0]); 
-        }
         } catch (IOException | NoSuchAlgorithmException e) {
             System.out.println("File error: " + e.getMessage());
         }
     }
 
     public static boolean init() throws IOException { // return false if there is no
-                                                                  // folder that is created,else
-                                                                  // return true;
-                                                                  //classic yiewi ye comment :<
+                                                      // folder that is created,else
+                                                      // return true;
+                                                      // classic yiewi ye comment :<
         int CreatedCount = 0;
         File gitFolder = new File("git/");
-        if (!gitFolder.exists()) {/////
+        if (!gitFolder.exists()) {
             gitFolder.mkdir();
             CreatedCount++;
         }
@@ -91,7 +91,7 @@ public class Git {
     }
 
     public static String hashFile(String filePath) throws IOException, NoSuchAlgorithmException {
-        Path path = Path.of(filePath);  
+        Path path = Path.of(filePath);
         if (!Files.isRegularFile(path)) {
             throw new IOException("No such files: " + filePath);
         }
@@ -149,9 +149,9 @@ public class Git {
     public static void index(String filePath) throws IOException, NoSuchAlgorithmException {
         Path root = Path.of("").toAbsolutePath().normalize();
         Path file = root.resolve(filePath).normalize();
-		if (!file.startsWith(root) || !Files.isRegularFile(file)) {
-     	   throw new IOException("no" + filePath);
-    	}
+        if (!file.startsWith(root) || !Files.isRegularFile(file)) {
+            throw new IOException("no" + filePath);
+        }
         String relativePath = root.relativize(file).toString()
                 .replace(File.separatorChar, '/');
 
@@ -162,132 +162,134 @@ public class Git {
 
         ArrayList<String> lines = new ArrayList<>();
 
-		if (Files.exists(index)) {
-        	for (String line : Files.readAllLines(index)) {
+        if (Files.exists(index)) {
+            for (String line : Files.readAllLines(index)) {
                 if (line.equals(hash + " " + relativePath)) {
                     return;
                 }
-            	int space = line.indexOf(' ');
-        		if (space >= 0 && !line.substring(space + 1).equals(relativePath)) {
-                	lines.add(line);
-            	}
-        	}
- 		}
-
-    	lines.add(hash + " " + relativePath);
-    	Files.writeString(index, String.join("\n", lines));
-	}
-        public static String createTree(ArrayList<String> workingList, String dirPath) throws IOException, NoSuchAlgorithmException {
-
-            ArrayList<String> childern = new ArrayList<>();
-
-            for (String entry : workingList) {
-                String[] parts = entry.split(" ", 3);
-                String path = parts[2];
-
-                int end = path.lastIndexOf('/');
-                String dir = "";
-
-                if(end != -1) {
-                    dir = path.substring(0, end);
-                }
-
-                if(dir.equals(dirPath)) {
-                    String fileName = path.substring(end + 1);
-                    childern.add(parts[0] + " " + parts[1] + " " + fileName);
+                int space = line.indexOf(' ');
+                if (space >= 0 && !line.substring(space + 1).equals(relativePath)) {
+                    lines.add(line);
                 }
             }
+        }
 
-            for (int i = 0; i < childern.size() - 1; i++) {
-                for (int j = i + 1; j < childern.size(); j++) {
-                    String currName = childern.get(i).split(" ", 3)[2];
-                    String prevName = childern.get(j).split(" ", 3)[2];
-                    
-                    if(currName.compareTo(prevName) > 0) {
-                        String hold = childern.get(i);
-                        childern.set(i, childern.get(j));
-                        childern.set(j, hold);
-                    }
+        lines.add(hash + " " + relativePath);
+        Files.writeString(index, String.join("\n", lines));
+    }
+
+    public static String createTree(ArrayList<String> workingList, String dirPath)
+            throws IOException, NoSuchAlgorithmException {
+
+        ArrayList<String> childern = new ArrayList<>();
+
+        for (String entry : workingList) {
+            String[] parts = entry.split(" ", 3);
+            String path = parts[2];
+
+            int end = path.lastIndexOf('/');
+            String dir = "";
+
+            if (end != -1) {
+                dir = path.substring(0, end);
+            }
+
+            if (dir.equals(dirPath)) {
+                String fileName = path.substring(end + 1);
+                childern.add(parts[0] + " " + parts[1] + " " + fileName);
+            }
+        }
+
+        for (int i = 0; i < childern.size() - 1; i++) {
+            for (int j = i + 1; j < childern.size(); j++) {
+                String currName = childern.get(i).split(" ", 3)[2];
+                String prevName = childern.get(j).split(" ", 3)[2];
+
+                if (currName.compareTo(prevName) > 0) {
+                    String hold = childern.get(i);
+                    childern.set(i, childern.get(j));
+                    childern.set(j, hold);
                 }
             }
+        }
 
-            StringBuilder content = new StringBuilder();
+        StringBuilder content = new StringBuilder();
 
-            for(String child : childern) {
-                content.append(child).append('\n');
-            }
+        for (String child : childern) {
+            content.append(child).append('\n');
+        }
 
-            byte[] treeBytes = content.toString().getBytes("UTF-8");
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            byte[] hashBytes = digest.digest(treeBytes);
+        byte[] treeBytes = content.toString().getBytes("UTF-8");
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        byte[] hashBytes = digest.digest(treeBytes);
 
-            StringBuilder hex = new StringBuilder();
+        StringBuilder hex = new StringBuilder();
 
-            for(byte bit : hashBytes){
-                hex.append(String.format("%02x", bit & 0xff));
-            }
-            String hash = hex.toString();
-            Path objectsFolder = Path.of("git", "objects");
-            Files.createDirectories(objectsFolder);
-            Path treeFile = objectsFolder.resolve(hash); 
+        for (byte bit : hashBytes) {
+            hex.append(String.format("%02x", bit & 0xff));
+        }
+        String hash = hex.toString();
+        Path objectsFolder = Path.of("git", "objects");
+        Files.createDirectories(objectsFolder);
+        Path treeFile = objectsFolder.resolve(hash);
 
-            if (!Files.exists(treeFile)) {
-                Files.write(treeFile, treeBytes);
+        if (!Files.exists(treeFile)) {
+            Files.write(treeFile, treeBytes);
         }
         return hash;
     }
-    
-        public static String createTreeFromIndex() throws IOException, NoSuchAlgorithmException {
 
-            ArrayList<String> workingList = new ArrayList<>();
+    public static String createTreeFromIndex() throws IOException, NoSuchAlgorithmException {
 
-            for (String line : Files.readAllLines(Path.of("git", "index"))) {
-                if (!line.isBlank()) {
-                    workingList.add("blob " + line); 
+        ArrayList<String> workingList = new ArrayList<>();
+
+        for (String line : Files.readAllLines(Path.of("git", "index"))) {
+            if (!line.isBlank()) {
+                workingList.add("blob " + line);
+            }
+        }
+
+        for (int i = 0; i < workingList.size() - 1; i++) { // as seen on tv/above
+            for (int j = i + 1; j < workingList.size(); j++) {
+                String firstPath = workingList.get(i).split(" ", 3)[2];
+                String secondPath = workingList.get(j).split(" ", 3)[2];
+
+                if (firstPath.compareTo(secondPath) > 0) {
+                    String hold = workingList.get(i);
+                    workingList.set(i, workingList.get(j));
+                    workingList.set(j, hold);
+                }
+            }
+        }
+
+        while (true) {
+            String Deepdir = "";
+            int Deepdirlevel = -1;
+
+            for (String entry : workingList) {
+                String path = entry.split(" ", 3)[2];
+                int depth = path.split("/").length - 1;
+
+                if (depth > Deepdirlevel) {
+                    Deepdirlevel = depth;
+                    Deepdir = getDirectory(path);
                 }
             }
 
-            for (int i = 0; i < workingList.size() - 1; i++) { //as seen on tv/above
-                for (int j = i + 1; j < workingList.size(); j++) {
-                    String firstPath = workingList.get(i).split(" ", 3)[2];
-                    String secondPath = workingList.get(j).split(" ", 3)[2];
+            String hash = createTree(workingList, Deepdir);
 
-                    if (firstPath.compareTo(secondPath) > 0) {
-                        String hold = workingList.get(i);
-                        workingList.set(i, workingList.get(j));
-                        workingList.set(j, hold);
-                    }
+            for (int i = workingList.size() - 1; i >= 0; i--) {
+                String coolpath = workingList.get(i).split(" ", 3)[2];
+
+                if (getDirectory(coolpath).equals(Deepdir)) {
+                    workingList.remove(i);
                 }
             }
 
-            while (true) {
-                String Deepdir = ""; 
-                int Deepdirlevel = -1;
+            workingList.add("tree " + hash + " " + Deepdir);
 
-                for (String entry : workingList) {
-                    String path = entry.split(" ", 3)[2];
-                    int depth = path.split("/").length - 1; 
-
-                    if (depth > Deepdirlevel) {
-                        Deepdirlevel = depth;
-                        Deepdir = getDirectory(path); 
-                }
-
-                String hash = createTree(workingList, Deepdir); 
-
-                for (int i = workingList.size() - 1; i >= 0; i--) {
-                    String coolpath = workingList.get(i).split(" ", 3)[2];
-
-                    if (getDirectory(coolpath).equals(Deepdir)) {
-                        workingList.remove(i); 
-                    }
-                }
-
-                workingList.add("tree " + hash + " " + Deepdir);
-
-                if (Deepdir.isEmpty()) {
-                    return hash; 
-                }
+            if (Deepdir.isEmpty()) {
+                return hash;
             }
         }
     }
@@ -295,7 +297,7 @@ public class Git {
     private static String getDirectory(String path) {
         int lastSlash = path.lastIndexOf('/');
         if (lastSlash == -1) {
-            return ""; 
+            return "";
         }
         return path.substring(0, lastSlash);
     }

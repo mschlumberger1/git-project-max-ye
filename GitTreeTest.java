@@ -6,6 +6,10 @@ import java.util.ArrayList;
 
 public class GitTreeTest {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+        // testing functionality of verification 1
+        Git.index("tree-test/docs/hello.txt)");
+
+        // original tester
         ArrayList<String> workingList = new ArrayList<>(); 
 
         workingList.add("blob 483b5e082cf5502b303ba3dd4f3469a49fd3421f layer1/layer2/entry.txt");
